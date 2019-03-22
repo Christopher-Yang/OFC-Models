@@ -1,62 +1,41 @@
-% Simulation of a point to point reach with different degrees of rotation.
-% This script produces 2D position plots of the three angles of rotation
-% the user selects. Parameters to adjust before starting: delt, nstep,
-% distance, ang, Q, R.
+% Simulation of a 1D point-to-point reach in a finite horizon formulation.
+% This script produces position, velocity, and motor command plots for the
+% simulation. Parameters to adjust before starting: delt, simTime, Q, R.
 
 clear all;
 rand('seed',1);
 
-% adjust time step 
 delt = 0.001; % time step length in secs
-nstep = ceil(3/delt); % number of time steps
-distance = -8; % horizontal distance of hand from zero
+simTime = 3; % number of seconds to simulate movements
+nstep = ceil(simTime/delt); % number of time steps
 
-% values for Q and R taken from Qian infinite horizon model
+% accuracy and effort matrices
 R = 0.00001; % effort cost- default is 0.0001
 Q = [1 0 0 -1
     0 0 0 0
     0 0 0 0
     -1 0 0 1]*0.1;
 
-% % parameters for A and B matrices
-% t1 = 0.224;
-% t2 = 0.013;
-% t3 = 0.004;
-% k = 0; %1 to include spring
-% b = t1 + t2;
-% m = t1*t2;
-% r = t3;
-
-% % generate A and B matrices in discrete time formulation
-% A = [0 1 0
-%     -k/m -b/m 1/m
-%     0 0 -1/r];
-% A2 = expm(delt*A);
-% Ac = blkdiag(A,1);
-% Ad = blkdiag(A2,1);
-% 
-% Bc = [0 0 1/r 0]';
-% Bd = delt*Bc;
-
 % Single joint reaching movements:
 G = .14;        % Viscous Constant: Ns/m
 I = .1;         % Inertia Kgm2
 tau = 0.066;    % Muscle time constant, s
 
-A = [0 1 0;0 -G/I 1/I;0 0 -1/tau];
-A2 = expm(delt*A);
-Ad = blkdiag(A2,1);
+A = [0 1 0;0 -G/I 1/I;0 0 -1/tau]; % build system dynamics matrix
+A2 = expm(delt*A); % discretize A
+Ad = blkdiag(A2,1); % augment A with target location dynamics
 
-B = [0;0;1/tau;0];
-Bd = delt*B;
+B = [0;0;1/tau;0]; % build input matrix
+Bd = delt*B; % discretize B
 
 order = size(Ad,1); % order of the system
 
 x = zeros(order,nstep);
-x(1,1) = distance; % initialize state variables; x position
-xhat = x;
+x(1,1) = 0; % hand starting position
+x(4,1) = 3;
 u = zeros(size(Bd,2),nstep); % movement commands
 
+% calculate control law, L
 P = zeros(order,order,nstep);
 L = zeros(nstep,order);
 P(:,:,end) = Q;
@@ -65,6 +44,7 @@ for i = 2:nstep
     L(nstep-i+1,:) = inv(R + Bd'*P(:,:,nstep-i+2)*Bd)*(Bd'*P(:,:,nstep-i+2)*Ad);
 end
 
+% simulate arm movements
 for i = 2:nstep
     u(:,i) = -L(i-1,:)*x(:,i-1);
     x(:,i) = Ad*x(:,i-1) + Bd*u(:,i);
