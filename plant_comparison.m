@@ -8,7 +8,7 @@ rng(1);
 G = .14;        % Viscous Constant: Ns/m
 I = .1;         % Inertia Kgm2
 tau = 0.066;    % Muscle time constant, s
-delay = 0.250; 
+delay = .25; 
 
 A1 = [0 1 0
     0 -G/I 1/I
@@ -17,9 +17,9 @@ B1 = [0 0 1/tau]';
 C1 = [1 0 0];
 
 A2 = [0 1 0 0
-    0 -G/I 2/(delay*I) -1/I
-    0 0 -1/delay 1
-    0 0 0 1/tau];
+    0 -G/I 4/(delay*I) -1/I
+    0 0 -2/delay 1
+    0 0 0 -1/tau];
 B2 = [0 0 0 1/tau]';
 C2 = [1 0 0 0];
 
@@ -30,11 +30,11 @@ freq = 0.01:0.01:1000;
 [mag2, phase2] = bode(H,freq);
 mag1 = 20*log10(mag1);
 mag2 = 20*log10(mag2);
-phase1 = squeeze(phase1) + 90;
-phase2 = squeeze(phase2) - 90;
+phase1 = squeeze(phase1);
+phase2 = squeeze(phase2)-360;
 
 lag = phase1 - phase2;
-lag = 1000*lag/360;
+lag = 2*pi*1000*lag./(freq'*360);
 
 figure
 subplot(2,1,1)

@@ -13,26 +13,23 @@ order = 3; % order of the system
 delt = 0.005; % time step in secs
 
 % adjust amount of time lag 
-lag = 0.27/delt; % compute number of time steps of lag (0.27 = 270 milliseconds)
+lag = 0.4/delt; % compute number of time steps of lag (0.27 = 270 milliseconds)
 
 % values for Q and R taken from Qian infinite horizon model
 Q = diag([1 0.01 0]); % accuracy cost- default is [1 0.01 0]
 R = 0.0001; % effort cost- default is 0.0001
 
-% parameters for A and B matrices
-t1 = 0.224; 
-t2 = 0.013;
-t3 = 0.004;
-k = 0;
-b = t1 + t2;
-m = t1*t2;
-r = t3;
+% Single joint reaching movements:
+G = .14;        % Viscous Constant: Ns/m
+I = .1;         % Inertia Kgm2
+tau = 0.066;    % Muscle time constant, s
 
-% generate A and B matrices in discrete time formulation
-A = [0 1 0; -k/m -b/m 1/m; 0 0 -1/r];
-A = eye(order) + delt*A;
-B = [0 0 1/r]';
-B = delt*B;
+A = [0 1 0;0 -G/I 1/I;0 0 -1/tau];
+A2 = expm(delt*A);
+Ad = blkdiag(A2,1);
+
+B = [0;0;1/tau];
+Bd = delt*B;
 
 T = 42; % total simulation time
 

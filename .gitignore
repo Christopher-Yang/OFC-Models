@@ -1,1 +1,11 @@
 extra/
+*.asv
+*.mat
+2dof_model.m
+P2P_1D_pade.m
+SS_1Dv2.m
+angle.mat
+delay_comparison.m
+plot_traj.m
+test.m
+test2.m

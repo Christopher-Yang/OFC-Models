@@ -3,7 +3,7 @@
 % simulation. Parameters to adjust before starting: delt, simTime, Q, R.
 
 clear all;
-rand('seed',1);
+rng(1);
 
 delt = 0.001; % time step length in secs
 simTime = 3; % number of seconds to simulate movements
