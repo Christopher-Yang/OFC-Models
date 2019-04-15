@@ -8,7 +8,7 @@ clear all;
 load('dat.mat');
 rng(1);
 
-z = 1; % number of simulations
+z = 5; % number of simulations
 order = 3; % order of the system
 delt = 0.005; % time step in secs
 
@@ -27,6 +27,8 @@ k = 0;
 b = t1 + t2;
 m = t1*t2;
 r = t3;
+
+sigma = 100*sqrt(delt);
 
 % generate A and B matrices in discrete time formulation
 A = [0 1 0; -k/m -b/m 1/m; 0 0 -1/r];
@@ -69,7 +71,7 @@ u = zeros(nstep,1); % movement commands
 for j = 1:z
     for i = 2:nstep
         u(i) = -L*xt(:,i-1);
-        xt(:,i) = A*xt(:,i-1) + B*u(i);
+        xt(:,i) = A*xt(:,i-1) + B*(u(i) + sigma*randn(1));
         
         hand(i,z) = hand(i-1,z) + (xt(1,i) - xt(1,i-1)); % compute absolute hand position
         xt(1,i) = hand(i,z) - target(i); % adjust xt position according to sum of sines target motion
